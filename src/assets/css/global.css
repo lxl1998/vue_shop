@@ -3,3 +3,18 @@ html,body,#app{
   padding: 0;
   height: 100%;
 }
+.el-breadcrumb{
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+.el-card{
+  border-radius: 5px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.1) !important;
+}
+.el-table{
+  margin-top: 15px;
+  font-size: 12px;
+}
+.el-pagination{
+  margin-top: 15px;
+}

@@ -4,7 +4,12 @@ import router from './router'
 import './plugins/element.js'
 import global from './assets/css/global.css'
 import axios from 'axios'
+
 axios.defaults.baseURL='http://timemeetyou.com:8889/api/private/v1/'
+axios.interceptors.request.use(config=>{
+  config.headers.Authorization = window.sessionStorage.getItem('token')
+  return config
+})
 Vue.prototype.$http = axios
 // Vue.use(axios)
 Vue.config.productionTip = false

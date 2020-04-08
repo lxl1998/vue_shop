@@ -40,7 +40,7 @@
               <el-button type="danger" icon="el-icon-delete" @click="romoveUser(scope.row.id)"></el-button>
             </el-tooltip>
             <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-              <el-button type="warning" icon="el-icon-setting"></el-button>
+              <el-button type="warning" icon="el-icon-setting" @click="setRole(scope.row)"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -100,6 +100,23 @@
         <el-button type="primary" @click="editUserInfo">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 这是分配角色的对话框 -->
+    <el-dialog title="提示" :visible.sync="setRolesVisible" width="50%">
+      <div>
+        <p>当前的用户：{{userInfo.username}}</p>
+        <p>当前的角色：{{userInfo.role_name}}</p>
+        <p>分配新角色：
+          <el-select v-model="chooseRole" placeholder="请选择角色">
+            <el-option v-for="item in rolesList" :key="item.id"
+            :label="item.roleName" :value="item.id"></el-option>
+          </el-select>
+        </p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRolesVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -137,12 +154,19 @@ export default {
       centerDialogVisible: false,
       //修改用户的对话框
       editDialogVisible: false,
+      // 所有角色的数据列表
+      rolesList:[],
+      userInfo:{},
+      // 被选中的值展示到下拉菜单中
+      chooseRole:'',
       addForm: {
         username: "",
         password: "",
         email: "",
         mobile: ""
       },
+      // 控制分配角色的对话框
+      setRolesVisible:false,
       //修改用户信息
       editForm: {},
       addRules: {
@@ -253,18 +277,46 @@ export default {
         cancelButtonText: "取消",
         type: "warning",
         center: true
-      }).then(res=>{
-        this.$http.delete('users/'+id).then(res=>{
-          if(res.data.meta.status !==200){
-            return this.$message.error('删除失败')
-          }else{ 
-            this.getUserList();
-            return this.$message.success('删除成功')
-          }
+      })
+        .then(res => {
+          this.$http.delete("users/" + id).then(res => {
+            if (res.data.meta.status !== 200) {
+              return this.$message.error("删除失败");
+            } else {
+              this.getUserList();
+              return this.$message.success("删除成功");
+            }
+          });
         })
+        .catch(err => {
+          this.$message.info("已取消删除");
+        });
+    },
+    // 下拉菜单的选择角色
+    setRole(userInfo){
+      this.userInfo = userInfo
+      this.$http.get('roles').then(res=>{
+        this.rolesList = res.data.data
+        this.setRolesVisible = true;
+        console.log(this.rolesList);
+        
       }).catch(err=>{
-        this.$message.info('已取消删除')
-      });
+        return this.$message.error('获取失败')
+      })
+    },
+    saveRoleInfo(){
+      if(!this.chooseRole){
+        return $this.$message.error('请选择角色')
+      }
+      this.$http.put(`users/${this.userInfo.id}/role`,{
+        rid:this.chooseRole
+      }).then(res=>{
+        this.$message.success('分配成功')
+        this.setRolesVisible = false;
+        this.getUserList();
+      }).catch(err=>{
+        return $this.$message.error('分配失败')
+      })
     }
   },
   components: {}
